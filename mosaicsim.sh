@@ -30,7 +30,7 @@ display_Spike_usage() {
     echo "  -s, --spikein          bam file extract data from"
     echo "  -r, --ratio            spike-in ratio e.g 0.05 (5%)"
     echo "  -o, --output           path to output_dirpath for spikein results"
-    exit 1
+    exit 1  
 
 }
 
@@ -113,8 +113,9 @@ parse_options_spike() {
 main() {
     # Check if any arguments are provided
     if [ $# -eq 0 ]; then
-        echo "Usage: mosicsim <command> [arguments]"
-        echo "Commands:"
+        echo "Simulation of Mosaic Variants in Sequencing Data"
+        echo -e "\nUsage: mosicsim <pipline> [arguments]"
+        echo -e "\npipline:"
         echo "  Tyke     Genrated simulated mosaic SV/SNV"
         echo "  Spike    Simulates a sample with potential mosiac variants at a user-specified ratio"
         exit 1
@@ -142,11 +143,11 @@ main() {
             parse_options_spike "$@"
             SPIKE_FLAG=1
             ;;
-        # *)
-        #     echo "Unknown command: $1"
-        #     echo "Available commands: Tyke, Spike"
-        #     exit 1
-        #     ;;
+        *)
+            echo "Unknown command: $1"
+            echo "Available commands: Tyke, Spike"
+            exit 1
+            ;;
     esac
 }
 
