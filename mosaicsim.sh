@@ -6,17 +6,14 @@ REFERENCE_TYKE=""
 PREFIX_TYKE=""
 BAM_TYKE=""
 TYKE_FALG="0"
-NO_COMMENT="off"
-HEADERS="off"
-NO_HEADER="off"
-REFERENCE=""
-REGIONS_FILE=""
-UNCOMPRESSED="off"
-NO_PG="off"
-PARAMETERS=()
-
+SPIKE_FLAG="0"
+BASELINE_SPIKE=""
+SPIKEIN_SPIKE=""
+RATIO_SPIKE=""
+OUTPUT_SPIKE=""
 display_Tyke_usage() {
     echo "Options:"
+    echo "  -h, --help                     Display this help message"
     echo "  -b, --bam        <bam>         Input bam file"
     echo "  -p, --prefix     <prefix>      output prefix "
     echo "  -s, --seed       <seed>        seed number "
@@ -28,6 +25,12 @@ display_Tyke_usage() {
 # Function to display usage information for 'samtools Spike' command
 display_Spike_usage() {
     echo "Options:"
+    echo "  -h, --help             Display this help message"
+    echo "  -b, --baseline         bam file to spike data into"
+    echo "  -s, --spikein          bam file extract data from"
+    echo "  -r, --ratio            spike-in ratio e.g 0.05 (5%)"
+    echo "  -o, --output           path to output_dirpath for spikein results"
+    exit 1
 
 }
 
@@ -55,6 +58,48 @@ parse_options_tyke() {
                 shift
                 shift
                 ;;
+            -h|--help)
+                display_Tyke_usage
+                shift
+                shift
+                ;;
+            *)
+                shift
+                echo "Unknown1 option: $1"
+                exit 1
+                ;;
+        esac
+    done
+}
+
+parse_options_spike() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -b|--baseline)
+                BASELINE_SPIKE=$2
+                shift
+                shift
+                ;;
+            -s|--spikein)
+                SPIKEIN_SPIKE=$2
+                shift
+                shift
+                ;;
+            -r|--ratio )
+                RATIO_SPIKE=$2
+                shift
+                shift
+                ;;
+            -o|--output )
+                OUTPUT_SPIKE=$2
+                shift
+                shift
+                ;;
+            -h|--help)
+                display_Spike_usage
+                shift
+                shift
+                ;;
             *)
                 shift
                 echo "Unknown1 option: $1"
@@ -77,7 +122,7 @@ main() {
 
     # Parse the command and call respective function
     case $1 in
-        tyke)
+        tyke|Tyke)
             shift
             if [ $# -eq 0 ]
             then
@@ -87,14 +132,15 @@ main() {
             parse_options_tyke "$@"
             TYKE_FALG="1"
             ;;
-        spike)
+        spike|Spike)
             shift
             if [ $# -eq 0 ]
             then
                 display_Spike_usage
                 exit
             fi
-            parse_options "$@"
+            parse_options_spike "$@"
+            SPIKE_FLAG=1
             ;;
         # *)
         #     echo "Unknown command: $1"
@@ -112,4 +158,13 @@ then
     echo "${BAM_TYKE}" "${REFERENCE_TYKE}" "${PREFIX_TYKE}" "${SEED_TYKE}"
     exit
     python3 scripts/Tyke/TykeVarSimulator/TykeVarSimulator.py "${BAM_TYKE}" "${REFERENCE_TYKE}" "${PREFIX_TYKE}" "${SEED_TYKE}"
+    python3 main.py -v SIMULATED_VCF -b BAM -r REF -o OUTPUT_FASTQ
+    python3 filter_merge_bam.py -b BAM -m MOD_BAM --primary -o OUT_DIR --prefix PREFIX
+    exit
 fi 
+
+if [ $SPIKE_FLAG == "1" ]
+then
+    echo "Spikein pipline"
+    echo "$BASELINE_SPIKE" "$SPIKEIN_SPIKE" "$RATIO_SPIKE" "$OUTPUT_SPIKE"
+fi
