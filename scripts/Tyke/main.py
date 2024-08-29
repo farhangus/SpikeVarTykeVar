@@ -58,10 +58,16 @@ def vcf_number_variants(input_vcf_file, input_bam_file, refs, outfile):
             #     continue
             chromosome = v.chrom
             start_position = v.start
-            variant_seq = v.alts[0]
-            variant_len = len(variant_seq)
-            end_position = start_position + variant_len
-            #print(start_position,end_position)
+        
+            if var_type =='<DEL>':
+                end_position = int(v.info.get('END'))
+                
+            else:
+                
+                variant_seq = v.alts[0]
+                variant_len = len(variant_seq)
+                end_position = start_position + variant_len
+                #print(start_position,end_position)
             #svtype = "INS"
             #variant_len = 100
             #variant_seq = 'T' * variant_len
